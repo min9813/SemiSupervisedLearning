@@ -15,8 +15,12 @@
 
 #### Result
 - 20000 iteration on MNIST with 100 labeled data and 59900 unlabeled data.
-- valid on 10000 test data, and the accuracy fluctuatint around 97%.
-![MNIST 20000 iteration with VAT and SmallCNN](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/accuracy.png)
+- valid on 10000 test data, and the accuracy fluctuated around 97%.
+![MNIST 20000 iteration with VAT and SmallCNN](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/vat_accuracy.png)
+
+- Base model(without any technique.) on Mnist with 20000 iteration and SmallCNN.
+- The accuracy fluctuated around 87%.
+![MNIST 20000 iteration with Base method and SmallCNN](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/base_accuracy.png)
 
 #### Notice
 - In calculating LSD loss, learning performed better when I use LSD both in labeled and unlabeled data. Otherwise, learning maybe failed.
