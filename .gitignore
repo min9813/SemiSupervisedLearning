@@ -1,10 +1,7 @@
 *.ipynb
-*.png
-*.csv
-*.jpeg
-*.jpg
 __pycache__
 .ipynb_checkpoints
 /chainer-gan-lib/
 /result
 *.sh
+!/result_sample
