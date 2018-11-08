@@ -4,4 +4,5 @@ __pycache__
 /chainer-gan-lib/
 /result
 *.sh
+/common/data
 !/result_sample

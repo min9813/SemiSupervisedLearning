@@ -14,12 +14,13 @@ from chainer.training import extensions
 
 DATASET_LIST = ["mnist", "cifar10"]
 ARCHITECTURE_LIST = ["small", "large"]
+EPSILON_PARAMS = {"mnist":2.0, "cifar10":8.0}
 
 
 def main():
     start = time.time()
     gpu_id = 0
-    out_folder = os.path.join("./result", args.method,
+    out_folder = os.path.join("./result", args.method, args.dataset,
                               "label_size:{}".format(args.label_size))
     if os.path.isdir(out_folder):
         new_folder = "folder_{}".format(len(os.listdir(out_folder)))
@@ -29,7 +30,7 @@ def main():
     if args.no_debug:
         max_time = (args.max_iter, "iteration")
     else:
-        max_time = (1000, "iteration")
+        max_time = (100, "iteration")
     batchsize = {"labeled": args.label_batchsize,
                  "unlabeled": args.unlabel_batchsize,
                  "test": args.test_batchsize}
@@ -54,6 +55,7 @@ def main():
         optimizer.setup(model)
         updater_args["models"] = model
         updater_args["optimizer"] = optimizer
+        updater_args["epsilon"] = EPSILON_PARAMS[args.dataset]
 
         plot_report = ["val/acc", "train/acc"]
         print_report = ["loss/label", "loss/lsd", "val/loss"] + plot_report

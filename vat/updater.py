@@ -13,6 +13,7 @@ class Updater(chainer.training.StandardUpdater):
     def __init__(self, *args, **kwargs):
         self.net = kwargs.pop("models")
         self.method = kwargs.pop("method")
+        self.epsilon = kwargs.pop("epsilon")
         self.xp = self.net.xp
         super(Updater, self).__init__(*args, **kwargs)
 
@@ -28,7 +29,7 @@ class Updater(chainer.training.StandardUpdater):
     def loss_unlabeled(self, model, x_data, y_data):
         if self.method == 'vat':
             # Virtual adversarial training loss
-            return distance.vat_loss(model, x_data, y_data)
+            return distance.vat_loss(model, x_data, y_data, epsilon=self.epsilon)
 
     def update_core(self):
         optimizer = self.get_optimizer("main")
