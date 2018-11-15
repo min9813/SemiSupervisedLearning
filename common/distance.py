@@ -14,6 +14,7 @@ def kl_binary(p_logit, q_logit):
 
 
 def kl_categorical(p_logit, q_logit):
+    assert len(p_logit.shape) == 2, print(p_logit.shape)
     p = F.softmax(p_logit)
     _kl = F.sum(p * (F.log_softmax(p_logit) - F.log_softmax(q_logit)), 1)
     return F.mean(_kl)
@@ -34,12 +35,14 @@ def distance(p_logit, q_logit, dist_type="KL"):
 
 
 def get_unit_vector(d, xp):
-    d /= xp.sqrt(1e-6 + xp.sum(d ** 2))
+    d /= (1e-12 + xp.max(xp.abs(d), axis=tuple(range(1, len(d.shape))), keepdims=True))
+    d /= xp.sqrt(1e-6 + xp.sum(d ** 2, axis=tuple(range(1, len(d.shape))), keepdims=True))
     return d
 
 
 def vat_loss(model, x_data, y_predict, train=True, epsilon=8.0, xi=1e-6, Ip=1):
     xp = model.xp
+    assert isinstance(y_predict, xp.ndarray)
     d = xp.random.normal(size=x_data.shape)
     d = get_unit_vector(d, xp).astype(xp.float32)
     for ip in range(Ip):

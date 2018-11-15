@@ -14,7 +14,11 @@ class Updater(chainer.training.StandardUpdater):
         self.net = kwargs.pop("models")
         self.method = kwargs.pop("method")
         self.epsilon = kwargs.pop("epsilon")
+        # params_plan = kwargs.pop("params_plan")
+        # self.lr_plan = params_plan["lr"]
+        # self.beta1_plan = params_plan["beta1"]
         self.xp = self.net.xp
+        self.opt_iteration = 0
         super(Updater, self).__init__(*args, **kwargs)
 
     def loss_label(self, y_predict, label):
@@ -27,12 +31,21 @@ class Updater(chainer.training.StandardUpdater):
         return loss
 
     def loss_unlabeled(self, model, x_data, y_data):
-        if self.method == 'vat':
             # Virtual adversarial training loss
-            return distance.vat_loss(model, x_data, y_data, epsilon=self.epsilon)
+        return distance.vat_loss(model, x_data, y_data.data, epsilon=self.epsilon)
+
+    def change_optimze_param(self, optimizer):
+        # for our difinition of epoch is different from original paper's one
+        if self.opt_iteration > 0:
+            epoch = self.opt_iteration // 400
+            optimizer.hyperparam.alpha = self.lr_plan[epoch]
+            optimizer.hyperparam.beta1 = self.beta1_plan[epoch]
+        self.opt_iteration += 1
+        return optimizer
 
     def update_core(self):
         optimizer = self.get_optimizer("main")
+        # optimizer = self.change_optimze_param(optimizer)
 
         label_batch = self.get_iterator('labeled').next()
         x_labeled, true_label = zip(*label_batch)
@@ -46,10 +59,7 @@ class Updater(chainer.training.StandardUpdater):
         loss_label = self.loss_label(y_with_label, true_label)
 
         y_unlabeled = self.net(x_unlabeled)
-        loss_lsd_unlabel = self.loss_unlabeled(self.net, x_unlabeled, y_unlabeled)
-        loss_lsd_label = self.loss_unlabeled(self.net, x_labeled, y_with_label)
-
-        loss_lsd = loss_lsd_label + loss_lsd_unlabel
+        loss_lsd = self.loss_unlabeled(self.net, x_unlabeled, y_unlabeled)
 
         self.net.cleargrads()
         loss_label.backward()
@@ -57,7 +67,7 @@ class Updater(chainer.training.StandardUpdater):
         optimizer.update()
 
         chainer.reporter.report({'train/loss': loss_label + loss_lsd})
-        chainer.reporter.report({'loss/label': loss_label})
+        chainer.reporter.report({'loss/classify': loss_label})
         chainer.reporter.report({'loss/lsd': loss_lsd})
 
     @property

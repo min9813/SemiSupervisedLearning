@@ -18,6 +18,8 @@ class Evaluator(extensions.Evaluator):
         if isinstance(target, link.Link):
             self.xp = target.xp
             target = {"main": target}
+        else:
+            NotImplementedError
         self._targets = target
 
         self.converter = converter

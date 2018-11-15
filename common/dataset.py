@@ -39,8 +39,7 @@ def normalize_image(tuple_dataset, data_dir, zca):
     return dataset
 
 
-def load_dataset(dataset_name, batchsize, zca=True, label_size=None, train_size=0.9, need_valid=False, label_num_dict=LABEL_NUM):
-    assert isinstance(batchsize, dict)
+def load_dataset(dataset_name, zca=True, label_size=None, train_size=0.9, need_valid=False, label_num_dict=LABEL_NUM):
     if label_size is None:
         label_size = label_num_dict[dataset_name]
 
@@ -77,20 +76,14 @@ def load_dataset(dataset_name, batchsize, zca=True, label_size=None, train_size=
         try:
             with open(valid_data_dir, "rb") as pkl:
                 d_valid = pickle.load(pkl)
-            d_valid = chainer.iterators.SerialIterator(
-                d_valid, batch_size=batchsize["test"], repeat=False, shuffle=False)
             _dataset["valid"] = d_valid
         except FileNotFoundError:
             train_size = int(len(d_train) * train_size)
             d_train, d_valid = chainer.datasets.split_dataset_random(
                 d_train, train_size, seed=0)
             d_valid = normalize_image(d_valid, valid_data_dir, zca)
-            d_valid = chainer.iterators.SerialIterator(
-                d_valid, batch_size=batchsize["test"], repeat=False, shuffle=False)
             _dataset["valid"] = d_valid
 
-    d_test = chainer.iterators.SerialIterator(
-        d_test, batch_size=batchsize["test"], repeat=False)
     _dataset["test"] = d_test
 
     # make label and unlabel data
@@ -100,34 +93,23 @@ def load_dataset(dataset_name, batchsize, zca=True, label_size=None, train_size=
     print("label size:", label_size)
     print("label size per class:", label_size_per_class)
     d_train_labeled = []
-    d_train_unlabeled = []
     label_list = []
     for class_label in range(class_label_num):
         label_idx, = np.where(train_label == class_label)
-        use_label_idx = np.random.choice(
+        label_idx = np.random.choice(
             label_idx, size=label_size_per_class, replace=False)
-        assert len(use_label_idx) == len(set(use_label_idx)), print(
-            len(use_label_idx), len(set(use_label_idx)))
-        unlabel_idx = np.setdiff1d(label_idx, use_label_idx)
-        d_train_unlabeled.append(train_image[unlabel_idx])
-        d_train_labeled.append(train_image[use_label_idx])
-        label_list.append(train_label[use_label_idx])
+        d_train_labeled.append(train_image[label_idx])
+        label_list.append(train_label[label_idx])
     d_train_labeled = np.concatenate(d_train_labeled).astype("f")
-    d_train_unlabeled = np.concatenate(d_train_unlabeled).astype("f")
     print("load {} with label. shape: ".format(
         dataset_name), d_train_labeled.shape)
     print("load {} without label. shape: ".format(
-        dataset_name), d_train_unlabeled.shape)
+        dataset_name), train_image.shape)
 
     label_list = np.concatenate(label_list)
     d_train_labeled = list(zip(d_train_labeled, label_list))
-    np.random.shuffle(d_train_unlabeled)
     np.random.shuffle(d_train_labeled)
 
-    d_train_labeled = chainer.iterators.SerialIterator(
-        d_train_labeled, batch_size=batchsize["labeled"])
-    d_train_unlabeled = chainer.iterators.SerialIterator(
-        d_train_unlabeled, batch_size=batchsize["unlabeled"])
     _dataset["train"] = {"labeled": d_train_labeled,
-                         "unlabeled": d_train_unlabeled}
+                         "unlabeled": train_image}
     return _dataset
