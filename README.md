@@ -26,15 +26,20 @@
 - VAT
   - 20000 iteration on MNIST with 100 labeled data and 59900 unlabeled data.
     - valid on 10000 test data, and the accuracy fluctuated around 97%.
+    - MNIST 20000 iteration with VAT and SmallCNN
     ![MNIST 20000 iteration with VAT and SmallCNN](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/mnist_vat_accuracy.png)
 
     - Base model(without any technique.) on Mnist with 20000 iteration and SmallCNN.
     - The accuracy fluctuated around 87%.
+    - MNIST 20000 iteration without any method(base) and SmallCNN
     ![MNIST 20000 iteration without any method(base) and SmallCNN](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/mnist_base_accuracy.png)
 
   - 500 epoch on Cifar10 with 4000 labeled data and 10000 valid data.
   - The accuracy with VAT is a bit lower than orignal paper'S one, but I'm not sure what's wrong with my code.
+  - but the accuracy of VAT is 5% higher than that of base method.
+  - CIFAR10 500 epoch with VAT and large cnn
     ![CIFAR10 500 epoch with VAT and large cnn](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/cifar10_vat_accuracy.png)
+  - CIFAR10 500 epoch without any method(base) and large cnn
     ![CIFAR10 500 epoch without any method(base) and large cnn](https://github.com/min9813/SemiSupervisedLearning/blob/master/result_sample/cifar10_base_accuracy.png)
 
 #### Notice
